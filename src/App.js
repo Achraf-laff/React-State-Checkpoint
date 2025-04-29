@@ -1,6 +1,5 @@
-
+import './App.css';
 import React, { Component } from 'react';
-
 class App extends Component {
   constructor() {
     super();
@@ -18,22 +17,47 @@ class App extends Component {
   }
 
   componentDidMount() {
-    this.timer = setInterval(() => {
-      this.setState(prevState => ({
-        mountedTime: prevState.mountedTime + 1
-      }));
-    }, 1000);
+    this.startTimer();
   }
 
   componentWillUnmount() {
-    clearInterval(this.timer);
+    this.clearTimer();
   }
 
+  startTimer = () => {
+    if (!this.timer) {
+      this.timer = setInterval(() => {
+        this.setState(prevState => ({
+          mountedTime: prevState.mountedTime + 1
+        }));
+      }, 1000);
+    }
+  };
+
+  clearTimer = () => {
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
+  };
+
   toggleShow = () => {
-    this.setState(prevState => ({
-      shows: !prevState.shows
-    }));
-  }
+    this.setState(
+      prevState => {
+        if (prevState.shows) {
+          this.clearTimer(); // Stop the timer when hiding the profile
+          return { shows: false, mountedTime: 0 }; // Reset the counter to 0
+        } else {
+          return { shows: true }; // Show the profile
+        }
+      },
+      () => {
+        if (this.state.shows) {
+          this.startTimer(); // Start the timer when showing the profile
+        }
+      }
+    );
+  };
 
   render() {
     return (
@@ -43,15 +67,14 @@ class App extends Component {
         </button>
 
         {this.state.shows && (
-          <div style={{ marginTop: '20px' }}>
+          <div className="card">
             <img src={this.state.person.imgSrc} alt="Profile" />
             <h2>{this.state.person.fullName}</h2>
             <p>{this.state.person.bio}</p>
             <h4>{this.state.person.profession}</h4>
+            <p>Component mounted since: {this.state.mountedTime} seconds</p>
           </div>
         )}
-
-        <p>Component mounted since: {this.state.mountedTime} seconds</p>
       </div>
     );
   }
